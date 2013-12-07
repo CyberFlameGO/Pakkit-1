@@ -192,5 +192,6 @@ public class Pakkit implements Listener {
         for (final Map.Entry<Class<?>, PakkitPacket> entry : this.packets.entrySet()) {
             entry.getValue().save(this.plugin.getConfig().createSection(entry.getKey().getSimpleName()));
         }
+        this.plugin.saveConfig();
     }
 }
