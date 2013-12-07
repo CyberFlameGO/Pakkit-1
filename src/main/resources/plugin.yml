@@ -1,0 +1,10 @@
+name: Pakkit
+main: org.kitteh.pakkit.Plugin
+author: mbaxter
+version: '${project.version}'
+commands:
+  pakkit:
+    description: Pakkit pakkit pakkit
+    usage: /pakkit
+    permission: pakkit.in
+    permission-message: You cannot pakkit
