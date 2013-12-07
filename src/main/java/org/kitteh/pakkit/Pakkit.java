@@ -135,7 +135,7 @@ public class Pakkit implements Listener {
             if (clazz.getSimpleName().toLowerCase().contains("chat") && output.substring(1).contains(clazz.getSimpleName() + "{")) {
                 return;
             }
-            this.plugin.getServer().broadcastMessage(output);
+            this.plugin.getServer().broadcastMessage(player.getName() + ": " + output);
         }
     }
 
