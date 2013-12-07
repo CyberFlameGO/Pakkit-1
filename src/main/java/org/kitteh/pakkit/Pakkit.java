@@ -96,6 +96,7 @@ public class Pakkit implements Listener {
             }
         } catch (final Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Could not start, unknown stuffs", e);
+            return;
         }
         for (final Map.Entry<String, Object> entry : plugin.getConfig().getValues(false).entrySet()) {
             if (entry.getValue() instanceof ConfigurationSection) {
