@@ -168,6 +168,9 @@ public class Pakkit implements Listener {
     }
 
     PakkitPacket getPacket(String string) {
+        if (!string.startsWith("Packet")) {
+            string = "PacketPlayOut" + string;
+        }
         for (final Map.Entry<Class<?>, PakkitPacket> entry : this.packets.entrySet()) {
             if (entry.getKey().getSimpleName().equalsIgnoreCase(string)) {
                 return entry.getValue();
@@ -179,7 +182,7 @@ public class Pakkit implements Listener {
     List<String> getPacketNames() {
         final List<String> names = new ArrayList<>();
         for (final Class<?> clazz : this.packets.keySet()) {
-            names.add(clazz.getSimpleName());
+            names.add(clazz.getSimpleName().startsWith("PacketPlayOut") ? clazz.getSimpleName().substring("PacketPlayOut".length()) : clazz.getSimpleName());
         }
         Collections.sort(names);
         return names;

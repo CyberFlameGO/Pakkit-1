@@ -56,7 +56,12 @@ final class PakkitPacket {
         }
         final Field old = this.mappings.put(mapping, field);
         this.mappingsReversed.put(fieldName, mapping);
-        return old == null ? null : old.getName();
+        if (old == null) {
+            return null;
+        }
+        final String oldName = old.getName();
+        this.mappingsReversed.remove(oldName);
+        return oldName;
     }
 
     String print(Object o) {
@@ -99,6 +104,6 @@ final class PakkitPacket {
     }
 
     void setFull(boolean full) {
-        this.full = full;
+        this.full = this.clazz.getSimpleName().toLowerCase().contains("chat") || full;
     }
 }
