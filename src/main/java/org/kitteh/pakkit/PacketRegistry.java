@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.server.v1_7_R1.Packet;
+import net.minecraft.server.v1_7_R1.PacketPlayOutAbilities;
+import net.minecraft.server.v1_7_R1.PacketPlayOutAnimation;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityTeleport;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityVelocity;
 import net.minecraft.server.v1_7_R1.PacketPlayOutNamedEntitySpawn;
@@ -33,6 +35,52 @@ import net.minecraft.server.v1_7_R1.PacketPlayOutRelEntityMoveLook;
 import com.google.common.collect.ImmutableMap;
 
 public enum PacketRegistry {
+    ABILITIES(PacketPlayOutAbilities.class) {
+        {
+            this.map("a", "isInvulnerable");
+            this.map("b", "isFlying");
+            this.map("c", "canFly");
+            this.map("d", "canInstantlyBuild");
+            this.map("e", "flyspeed");
+            this.map("f", "walkspeed");
+        }
+    },
+    ANIMATION(PacketPlayOutAnimation.class) {
+        {
+            this.map("a", PacketRegistry.ENTITY_ID);
+            this.map("b", "animation", new OutputSingleItem() {
+                @Override
+                String getOutput(Object o) {
+                    if (!(o instanceof Integer)) {
+                        return "NULL, ERROR";
+                    }
+                    int value = ((Integer) o).intValue();
+                    switch (value) {
+                        case 0:
+                            return "None";
+                        case 1:
+                            return "Swing arm";
+                        case 2:
+                            return "Damaged";
+                        case 3:
+                            return "Leave bed";
+                        case 5:
+                            return "Eat food";
+                        case 6:
+                            return "Critical!";
+                        case 7:
+                            return "Magical Critical!";
+                        case 104:
+                            return "Crouch";
+                        case 105:
+                            return "Stop crouching";
+                        default:
+                            return "Unknown(" + value + ")";
+                    }
+                }
+            });
+        }
+    },
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
         {
             this.map("a", PacketRegistry.ENTITY_ID);
@@ -75,32 +123,59 @@ public enum PacketRegistry {
     },
     ;
 
-    static class DefaultFieldOutputter implements FieldOutputter {
-        @Override
-        public String getOutput(String name, Field field, Object packet) {
-            final StringBuilder builder = new StringBuilder();
-            builder.append('"').append(name).append("\": \"");
-            String out;
+    abstract class Output {
+        final String getOutput(String name, Field field, Object packet) {
+            Object o;
             try {
-                out = field.get(packet).toString();
+                o = field.get(packet);
             } catch (final Exception e) {
-                out = e.getMessage();
+                o = null;
             }
-            builder.append(out).append("\", ");
-            return builder.toString();
+            return this.getOutput(name, o);
+        }
+
+        abstract String getOutput(String name, Object o);
+    }
+
+    class OutputDefault extends OutputSingleItem {
+        @Override
+        public String getOutput(Object o) {
+            return o.toString();
         }
     }
 
-    interface FieldOutputter {
-        String getOutput(String name, Field field, Object packet);
+    abstract class OutputMultiItem extends Output {
+        @Override
+        public String getOutput(String name, Object o) {
+            final StringBuilder builder = new StringBuilder();
+            for (final Map.Entry<String, String> entry : this.getItems(o).entrySet()) {
+                builder.append('"').append(entry.getKey()).append("\": \"");
+                builder.append(entry.getValue()).append("\", ");
+            }
+            return builder.toString();
+        }
+
+        abstract Map<String, String> getItems(Object o);
+    }
+
+    abstract class OutputSingleItem extends Output {
+        @Override
+        final String getOutput(String name, Object o) {
+            final StringBuilder builder = new StringBuilder();
+            builder.append('"').append(name).append("\": \"");
+            builder.append(this.getOutput(o)).append("\", ");
+            return builder.toString();
+        }
+
+        abstract String getOutput(Object o);
     }
 
     class PacketInfo {
         private final String name;
         private final Field field;
-        private final FieldOutputter output;
+        private final Output output;
 
-        PacketInfo(String name, Field field, FieldOutputter output) {
+        PacketInfo(String name, Field field, Output output) {
             this.name = name;
             this.field = field;
             this.output = output;
@@ -114,7 +189,7 @@ public enum PacketRegistry {
             return this.name;
         }
 
-        FieldOutputter getOutputter() {
+        Output getOutputter() {
             return this.output;
         }
     }
@@ -122,7 +197,6 @@ public enum PacketRegistry {
     private static final String ENTITY_ID = "EntityID";
     private static Map<Class<? extends Packet>, PacketRegistry> byClass;
     private static Set<Integer> trackedEntID = new HashSet<Integer>();
-    private static FieldOutputter DEFAULT_OUTPUT = new DefaultFieldOutputter();
 
     static {
         final Map<Class<? extends Packet>, PacketRegistry> map = new HashMap<>();
@@ -150,6 +224,7 @@ public enum PacketRegistry {
 
     private final Class<? extends Packet> clazz;
     private final List<PacketInfo> mapping = new ArrayList<>();
+    private final Output DEFAULT_OUTPUT = new OutputDefault();
 
     private PacketRegistry(Class<? extends Packet> clazz) {
         this.clazz = clazz;
@@ -168,7 +243,7 @@ public enum PacketRegistry {
         return builder.toString();
     }
 
-    protected void map(FieldOutputter output, String fieldName, String name, Class<?> clazz) {
+    protected void map(Output output, String fieldName, String name, Class<?> clazz) {
         try {
             final Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
@@ -185,10 +260,10 @@ public enum PacketRegistry {
     }
 
     protected void map(String fieldName, String name) {
-        this.map(fieldName, name, PacketRegistry.DEFAULT_OUTPUT);
+        this.map(fieldName, name, this.DEFAULT_OUTPUT);
     }
 
-    protected void map(String fieldName, String name, FieldOutputter customOutput) {
+    protected void map(String fieldName, String name, Output customOutput) {
         this.map(customOutput, fieldName, name, this.clazz);
     }
 
