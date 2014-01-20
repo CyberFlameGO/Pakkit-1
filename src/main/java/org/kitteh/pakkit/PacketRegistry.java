@@ -34,46 +34,47 @@ import com.google.common.collect.ImmutableMap;
 public enum PacketRegistry {
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
         {
-            this.map("a", PacketFields.ENTITY_ID);
-            this.map("c", PacketFields.X);
-            this.map("d", PacketFields.Y);
-            this.map("e", PacketFields.Z);
+            this.map("a", ENTITY_ID);
+            this.map("c", "X");
+            this.map("d", "Y");
+            this.map("e", "Z");
         }
     },
     VELOCITY(PacketPlayOutEntityVelocity.class) {
         {
-            this.map("a", PacketFields.ENTITY_ID);
-            this.map("b", PacketFields.MOT_X);
-            this.map("c", PacketFields.MOT_Y);
-            this.map("d", PacketFields.MOT_Z);
+            this.map("a", ENTITY_ID);
+            this.map("b", "MOT_X");
+            this.map("c", "MOT_Y");
+            this.map("d", "MOT_Z");
         }
     },
     MOVE(PacketPlayOutRelEntityMove.class) {
         {
-            this.map("a", PacketFields.ENTITY_ID);
-            this.map("b", PacketFields.X);
-            this.map("c", PacketFields.Y);
-            this.map("d", PacketFields.Z);
+            this.map("a", ENTITY_ID);
+            this.map("b", "X");
+            this.map("c", "Y");
+            this.map("d", "Z");
         }
     },
     MOVELOOK(PacketPlayOutRelEntityMoveLook.class) {
         {
-            this.map("a", PacketFields.ENTITY_ID);
-            this.map("b", PacketFields.X);
-            this.map("c", PacketFields.Y);
-            this.map("d", PacketFields.Z);
+            this.map("a", ENTITY_ID);
+            this.map("b", "X");
+            this.map("c", "Y");
+            this.map("d", "Z");
         }
     },
     TELEPORT(PacketPlayOutEntityTeleport.class) {
         {
-            this.map("a", PacketFields.ENTITY_ID);
-            this.map("b", PacketFields.X);
-            this.map("c", PacketFields.Y);
-            this.map("d", PacketFields.Z);
+            this.map("a", ENTITY_ID);
+            this.map("b", "X");
+            this.map("c", "Y");
+            this.map("d", "Z");
         }
     },
     ;
 
+    private static final String ENTITY_ID = "EntityID";
     private static Map<Class<? extends Packet>, PacketRegistry> byClass;
     private static Set<Integer> trackedEntID = new HashSet<Integer>();
 
@@ -91,14 +92,14 @@ public enum PacketRegistry {
         }
         final PacketRegistry reg = PacketRegistry.byClass.get(packet.getClass());
         try {
-            if (!PacketRegistry.trackedEntID.contains(reg.mapping.get(PacketFields.ENTITY_ID).get(packet))) {
+            if (!PacketRegistry.trackedEntID.contains(reg.mapping.get(ENTITY_ID).get(packet))) {
                 return null;
             }
         } catch (final Exception e) {
         }
         final StringBuilder builder = new StringBuilder();
         builder.append(reg.name()).append('{');
-        for (final Map.Entry<PacketFields, Field> entry : reg.mapping.entrySet()) {
+        for (final Map.Entry<String, Field> entry : reg.mapping.entrySet()) {
             builder.append('"').append(entry.getKey()).append("\": \"");
             String out;
             try {
@@ -125,25 +126,25 @@ public enum PacketRegistry {
 
     private final Class<? extends Packet> clazz;
 
-    private final Map<PacketFields, Field> mapping = new LinkedHashMap<>();
+    private final Map<String, Field> mapping = new LinkedHashMap<>();
 
     private PacketRegistry(Class<? extends Packet> clazz) {
         this.clazz = clazz;
     }
 
-    protected void map(String fieldName, PacketFields track) {
-        map(fieldName, track, this.clazz);
+    protected void map(String fieldName, String name) {
+        map(fieldName, name, this.clazz);
     }
 
-    protected void map(String fieldName, PacketFields track, Class<?> clazz) {
+    protected void map(String fieldName, String name, Class<?> clazz) {
         try {
             final Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
-            this.mapping.put(track, field);
+            this.mapping.put(name, field);
         } catch (final NoSuchFieldException e) {
             Class<?> sup = clazz.getSuperclass();
             if (!sup.equals(Object.class)) {
-                this.map(fieldName, track, sup);
+                this.map(fieldName, name, sup);
             }
         }
     }
