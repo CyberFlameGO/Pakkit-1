@@ -284,7 +284,7 @@ public enum PacketRegistry {
             return field;
         } catch (final NoSuchFieldException e) {
             final Class<?> sup = clazz.getSuperclass();
-            if (sup == null || sup.equals(Object.class)) {
+            if ((sup == null) || sup.equals(Object.class)) {
                 throw new AssertionError("Could not find field " + fieldName);
             }
             return this.map(output, fieldName, name, sup);
