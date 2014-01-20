@@ -27,6 +27,7 @@ import net.minecraft.server.v1_7_R1.Packet;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAbilities;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAnimation;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAttachEntity;
+import net.minecraft.server.v1_7_R1.PacketPlayOutBed;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityTeleport;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityVelocity;
 import net.minecraft.server.v1_7_R1.PacketPlayOutNamedEntitySpawn;
@@ -103,6 +104,14 @@ public enum PacketRegistry {
             });
             this.map("b", PacketRegistry.ENTITY_ID + "_rider/leashed");
             this.map("c", PacketRegistry.ENTITY_ID + "_vehicle/holder");
+        }
+    },
+    BED(PacketPlayOutBed.class) {
+        {
+            this.map("a", PacketRegistry.ENTITY_ID);
+            this.map("b", "X");
+            this.map("c", "Y");
+            this.map("d", "Z");
         }
     },
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
