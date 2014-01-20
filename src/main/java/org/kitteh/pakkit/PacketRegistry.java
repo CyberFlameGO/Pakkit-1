@@ -26,6 +26,7 @@ import java.util.Set;
 import net.minecraft.server.v1_7_R1.Packet;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAbilities;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAnimation;
+import net.minecraft.server.v1_7_R1.PacketPlayOutAttachEntity;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityTeleport;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityVelocity;
 import net.minecraft.server.v1_7_R1.PacketPlayOutNamedEntitySpawn;
@@ -54,7 +55,7 @@ public enum PacketRegistry {
                     if (!(o instanceof Integer)) {
                         return "NULL, ERROR";
                     }
-                    int value = ((Integer) o).intValue();
+                    final int value = ((Integer) o).intValue();
                     switch (value) {
                         case 0:
                             return "None";
@@ -79,6 +80,29 @@ public enum PacketRegistry {
                     }
                 }
             });
+        }
+    },
+    ATTACH_ENTITY(PacketPlayOutAttachEntity.class) {
+        {
+            this.map("a", "attachType", new OutputSingleItem() {
+                @Override
+                String getOutput(Object o) {
+                    if (!(o instanceof Integer)) {
+                        return "NULL, ERROR";
+                    }
+                    final int value = ((Integer) o).intValue();
+                    switch (value) {
+                        case 0:
+                            return "Vehicle";
+                        case 1:
+                            return "Leash";
+                        default:
+                            return "Unknown(" + value + ")";
+                    }
+                }
+            });
+            this.map("b", PacketRegistry.ENTITY_ID + "_rider/leashed");
+            this.map("c", PacketRegistry.ENTITY_ID + "_vehicle/holder");
         }
     },
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
