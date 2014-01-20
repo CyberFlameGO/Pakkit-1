@@ -52,11 +52,11 @@ public enum PacketRegistry {
             this.map("a", PacketRegistry.ENTITY_ID);
             this.map("b", "animation", new OutputSingleItem() {
                 @Override
-                String getOutput(Object o) {
-                    if (!(o instanceof Integer)) {
+                String getOutput(Object packet, Object extractedObject) {
+                    if (!(extractedObject instanceof Integer)) {
                         return "NULL, ERROR";
                     }
-                    final int value = ((Integer) o).intValue();
+                    final int value = ((Integer) extractedObject).intValue();
                     switch (value) {
                         case 0:
                             return "None";
@@ -87,11 +87,11 @@ public enum PacketRegistry {
         {
             this.map("a", "attachType", new OutputSingleItem() {
                 @Override
-                String getOutput(Object o) {
-                    if (!(o instanceof Integer)) {
+                String getOutput(Object packet, Object extractedObject) {
+                    if (!(extractedObject instanceof Integer)) {
                         return "NULL, ERROR";
                     }
-                    final int value = ((Integer) o).intValue();
+                    final int value = ((Integer) extractedObject).intValue();
                     switch (value) {
                         case 0:
                             return "Vehicle";
@@ -158,49 +158,49 @@ public enum PacketRegistry {
 
     abstract class Output {
         final String getOutput(String name, Field field, Object packet) {
-            Object o;
+            Object extractedObject;
             try {
-                o = field.get(packet);
+                extractedObject = field.get(packet);
             } catch (final Exception e) {
-                o = null;
+                extractedObject = null;
             }
-            return this.getOutput(name, o);
+            return this.getOutput(packet, name, extractedObject);
         }
 
-        abstract String getOutput(String name, Object o);
+        abstract String getOutput(Object packet, String name, Object extractedObject);
     }
 
     class OutputDefault extends OutputSingleItem {
         @Override
-        public String getOutput(Object o) {
-            return o.toString();
+        public String getOutput(Object packet, Object extractedObject) {
+            return extractedObject.toString();
         }
     }
 
     abstract class OutputMultiItem extends Output {
         @Override
-        public String getOutput(String name, Object o) {
+        public String getOutput(Object packet, String name, Object extractedObject) {
             final StringBuilder builder = new StringBuilder();
-            for (final Map.Entry<String, String> entry : this.getItems(o).entrySet()) {
+            for (final Map.Entry<String, String> entry : this.getItems(packet, extractedObject).entrySet()) {
                 builder.append('"').append(entry.getKey()).append("\": \"");
                 builder.append(entry.getValue()).append("\", ");
             }
             return builder.toString();
         }
 
-        abstract Map<String, String> getItems(Object o);
+        abstract Map<String, String> getItems(Object packet, Object extractedObject);
     }
 
     abstract class OutputSingleItem extends Output {
         @Override
-        final String getOutput(String name, Object o) {
+        final String getOutput(Object packet, String name, Object extractedObject) {
             final StringBuilder builder = new StringBuilder();
             builder.append('"').append(name).append("\": \"");
-            builder.append(this.getOutput(o)).append("\", ");
+            builder.append(this.getOutput(packet, extractedObject)).append("\", ");
             return builder.toString();
         }
 
-        abstract String getOutput(Object o);
+        abstract String getOutput(Object packet, Object extractedObject);
     }
 
     class PacketInfo {
