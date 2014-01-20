@@ -276,28 +276,27 @@ public enum PacketRegistry {
         return builder.toString();
     }
 
-    protected void map(Output output, String fieldName, String name, Class<?> clazz) {
+    protected Field map(Output output, String fieldName, String name, Class<?> clazz) {
         try {
             final Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
             this.mapping.add(new PacketInfo(name, field, output));
+            return field;
         } catch (final NoSuchFieldException e) {
             final Class<?> sup = clazz.getSuperclass();
-            if (sup == null) {
+            if (sup == null || sup.equals(Object.class)) {
                 throw new AssertionError("Could not find field " + fieldName);
             }
-            if (!sup.equals(Object.class)) {
-                this.map(output, fieldName, name, sup);
-            }
+            return this.map(output, fieldName, name, sup);
         }
     }
 
-    protected void map(String fieldName, String name) {
-        this.map(fieldName, name, this.DEFAULT_OUTPUT);
+    protected Field map(String fieldName, String name) {
+        return this.map(fieldName, name, this.DEFAULT_OUTPUT);
     }
 
-    protected void map(String fieldName, String name, Output customOutput) {
-        this.map(customOutput, fieldName, name, this.clazz);
+    protected Field map(String fieldName, String name, Output customOutput) {
+        return this.map(customOutput, fieldName, name, this.clazz);
     }
 
     Class<? extends Packet> getClazz() {
