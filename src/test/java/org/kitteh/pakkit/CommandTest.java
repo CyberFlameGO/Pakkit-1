@@ -6,6 +6,8 @@ import java.lang.reflect.Modifier;
 import org.bukkit.command.CommandSender;
 import org.junit.Assert;
 import org.junit.Test;
+import org.kitteh.pakkit.Command.Args;
+import org.kitteh.pakkit.Command.SubCommand;
 
 public final class CommandTest {
     @Test

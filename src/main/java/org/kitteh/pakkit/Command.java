@@ -15,9 +15,12 @@
  */
 package org.kitteh.pakkit;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,30 @@ import org.bukkit.command.TabExecutor;
 import com.google.common.collect.ImmutableList;
 
 final class Command implements TabExecutor {
+    @Retention(value = RetentionPolicy.RUNTIME)
+    @interface SubCommand {
+        String arg();
+    }
+    
+    final class Args {
+        private final String[] args;
+
+        Args(String[] args) {
+            this.args = args.length > 1 ? Arrays.copyOfRange(args, 1, args.length) : new String[0];
+        }
+
+        String get(int index) {
+            if (this.args.length <= index) {
+                return null;
+            }
+            return this.args[index];
+        }
+
+        int length() {
+            return this.args.length;
+        }
+    }
+    
     private static final List<String> OPTIONS;
     private static final Map<String, Method> METHODS = new HashMap<>();
     private static final String opt;
