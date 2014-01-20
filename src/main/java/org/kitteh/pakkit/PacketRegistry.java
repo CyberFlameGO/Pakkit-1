@@ -16,9 +16,10 @@
 package org.kitteh.pakkit;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ import com.google.common.collect.ImmutableMap;
 public enum PacketRegistry {
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
         {
-            this.map("a", ENTITY_ID);
+            this.map("a", PacketRegistry.ENTITY_ID);
             this.map("c", "X");
             this.map("d", "Y");
             this.map("e", "Z");
@@ -42,7 +43,7 @@ public enum PacketRegistry {
     },
     VELOCITY(PacketPlayOutEntityVelocity.class) {
         {
-            this.map("a", ENTITY_ID);
+            this.map("a", PacketRegistry.ENTITY_ID);
             this.map("b", "MOT_X");
             this.map("c", "MOT_Y");
             this.map("d", "MOT_Z");
@@ -50,7 +51,7 @@ public enum PacketRegistry {
     },
     MOVE(PacketPlayOutRelEntityMove.class) {
         {
-            this.map("a", ENTITY_ID);
+            this.map("a", PacketRegistry.ENTITY_ID);
             this.map("b", "X");
             this.map("c", "Y");
             this.map("d", "Z");
@@ -58,7 +59,7 @@ public enum PacketRegistry {
     },
     MOVELOOK(PacketPlayOutRelEntityMoveLook.class) {
         {
-            this.map("a", ENTITY_ID);
+            this.map("a", PacketRegistry.ENTITY_ID);
             this.map("b", "X");
             this.map("c", "Y");
             this.map("d", "Z");
@@ -66,7 +67,7 @@ public enum PacketRegistry {
     },
     TELEPORT(PacketPlayOutEntityTeleport.class) {
         {
-            this.map("a", ENTITY_ID);
+            this.map("a", PacketRegistry.ENTITY_ID);
             this.map("b", "X");
             this.map("c", "Y");
             this.map("d", "Z");
@@ -74,9 +75,54 @@ public enum PacketRegistry {
     },
     ;
 
+    static class DefaultFieldOutputter implements FieldOutputter {
+        @Override
+        public String getOutput(String name, Field field, Object packet) {
+            final StringBuilder builder = new StringBuilder();
+            builder.append('"').append(name).append("\": \"");
+            String out;
+            try {
+                out = field.get(packet).toString();
+            } catch (final Exception e) {
+                out = e.getMessage();
+            }
+            builder.append(out).append("\", ");
+            return builder.toString();
+        }
+    }
+
+    interface FieldOutputter {
+        String getOutput(String name, Field field, Object packet);
+    }
+
+    class PacketInfo {
+        private final String name;
+        private final Field field;
+        private final FieldOutputter output;
+
+        PacketInfo(String name, Field field, FieldOutputter output) {
+            this.name = name;
+            this.field = field;
+            this.output = output;
+        }
+
+        Field getField() {
+            return this.field;
+        }
+
+        String getName() {
+            return this.name;
+        }
+
+        FieldOutputter getOutputter() {
+            return this.output;
+        }
+    }
+
     private static final String ENTITY_ID = "EntityID";
     private static Map<Class<? extends Packet>, PacketRegistry> byClass;
     private static Set<Integer> trackedEntID = new HashSet<Integer>();
+    private static FieldOutputter DEFAULT_OUTPUT = new DefaultFieldOutputter();
 
     static {
         final Map<Class<? extends Packet>, PacketRegistry> map = new HashMap<>();
@@ -87,33 +133,11 @@ public enum PacketRegistry {
     }
 
     public static String getOutput(Object packet) {
-        if (!PacketRegistry.byClass.containsKey(packet.getClass())) {
+        final PacketRegistry reg = PacketRegistry.byClass.get(packet.getClass());
+        if (reg == null) {
             return null;
         }
-        final PacketRegistry reg = PacketRegistry.byClass.get(packet.getClass());
-        try {
-            if (!PacketRegistry.trackedEntID.contains(reg.mapping.get(ENTITY_ID).get(packet))) {
-                return null;
-            }
-        } catch (final Exception e) {
-        }
-        final StringBuilder builder = new StringBuilder();
-        builder.append(reg.name()).append('{');
-        for (final Map.Entry<String, Field> entry : reg.mapping.entrySet()) {
-            builder.append('"').append(entry.getKey()).append("\": \"");
-            String out;
-            try {
-                out = entry.getValue().get(packet).toString();
-            } catch (final Exception e) {
-                out = e.getMessage();
-            }
-            builder.append(out).append("\", ");
-        }
-        if (!reg.mapping.isEmpty()) {
-            builder.setLength(builder.length() - 2);
-        }
-        builder.append('}');
-        return builder.toString();
+        return reg.output(packet);
     }
 
     static void track(int ID) {
@@ -125,28 +149,47 @@ public enum PacketRegistry {
     }
 
     private final Class<? extends Packet> clazz;
-
-    private final Map<String, Field> mapping = new LinkedHashMap<>();
+    private final List<PacketInfo> mapping = new ArrayList<>();
 
     private PacketRegistry(Class<? extends Packet> clazz) {
         this.clazz = clazz;
     }
 
-    protected void map(String fieldName, String name) {
-        map(fieldName, name, this.clazz);
+    private String output(Object packet) {
+        final StringBuilder builder = new StringBuilder();
+        builder.append(this.name()).append('{');
+        for (final PacketInfo info : this.mapping) {
+            builder.append(info.getOutputter().getOutput(info.getName(), info.getField(), packet));
+        }
+        if (!this.mapping.isEmpty()) {
+            builder.setLength(builder.length() - 2);
+        }
+        builder.append('}');
+        return builder.toString();
     }
 
-    protected void map(String fieldName, String name, Class<?> clazz) {
+    protected void map(FieldOutputter output, String fieldName, String name, Class<?> clazz) {
         try {
             final Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
-            this.mapping.put(name, field);
+            this.mapping.add(new PacketInfo(name, field, output));
         } catch (final NoSuchFieldException e) {
-            Class<?> sup = clazz.getSuperclass();
+            final Class<?> sup = clazz.getSuperclass();
+            if (sup == null) {
+                throw new AssertionError("Could not find field " + fieldName);
+            }
             if (!sup.equals(Object.class)) {
-                this.map(fieldName, name, sup);
+                this.map(output, fieldName, name, sup);
             }
         }
+    }
+
+    protected void map(String fieldName, String name) {
+        this.map(fieldName, name, PacketRegistry.DEFAULT_OUTPUT);
+    }
+
+    protected void map(String fieldName, String name, FieldOutputter customOutput) {
+        this.map(customOutput, fieldName, name, this.clazz);
     }
 
     Class<? extends Packet> getClazz() {
