@@ -42,18 +42,18 @@ import com.google.common.collect.ImmutableMap;
 public enum PacketRegistry {
     ABILITIES(PacketPlayOutAbilities.class) {
         {
-            this.map("a", "isInvulnerable");
-            this.map("b", "isFlying");
-            this.map("c", "canFly");
-            this.map("d", "canInstantlyBuild");
-            this.map("e", "flyspeed");
-            this.map("f", "walkspeed");
+            this.map("a", boolean.class, "isInvulnerable");
+            this.map("b", boolean.class, "isFlying");
+            this.map("c", boolean.class, "canFly");
+            this.map("d", boolean.class, "canInstantlyBuild");
+            this.map("e", float.class, "flyspeed");
+            this.map("f", float.class, "walkspeed");
         }
     },
     ANIMATION(PacketPlayOutAnimation.class) {
         {
-            this.map("a", PacketRegistry.ENTITY_ID);
-            this.map("b", "animation", new OutputSingleItem() {
+            this.map("a", int.class, PacketRegistry.ENTITY_ID);
+            this.map("b", int.class, "animation", new OutputSingleItem() {
                 @Override
                 String getOutput(Object packet, Object extractedObject) {
                     if (!(extractedObject instanceof Integer)) {
@@ -88,7 +88,7 @@ public enum PacketRegistry {
     },
     ATTACH_ENTITY(PacketPlayOutAttachEntity.class) {
         {
-            this.map("a", "attachType", new OutputSingleItem() {
+            this.map("a", int.class, "attachType", new OutputSingleItem() {
                 @Override
                 String getOutput(Object packet, Object extractedObject) {
                     if (!(extractedObject instanceof Integer)) {
@@ -105,25 +105,25 @@ public enum PacketRegistry {
                     }
                 }
             });
-            this.map("b", PacketRegistry.ENTITY_ID + "_rider/leashed");
-            this.map("c", PacketRegistry.ENTITY_ID + "_vehicle/holder");
+            this.map("b", int.class, PacketRegistry.ENTITY_ID + "_rider/leashed");
+            this.map("c", int.class, PacketRegistry.ENTITY_ID + "_vehicle/holder");
         }
     },
     BED(PacketPlayOutBed.class) {
         {
-            this.map("a", PacketRegistry.ENTITY_ID);
-            this.map("b", "X");
-            this.map("c", "Y");
-            this.map("d", "Z");
+            this.map("a", int.class, PacketRegistry.ENTITY_ID);
+            this.map("b", int.class, "X");
+            this.map("c", int.class, "Y");
+            this.map("d", int.class, "Z");
         }
     },
     BLOCK_ACTION(PacketPlayOutBlockAction.class) {
         {
-            final Field block = this.map("f", "block");
-            this.map("a", "X");
-            this.map("b", "Y");
-            this.map("c", "Z");
-            this.map("d", "byte1", new OutputMultiItem() {
+            final Field block = this.map("f", Block.class, "block");
+            this.map("a", int.class, "X");
+            this.map("b", int.class, "Y");
+            this.map("c", int.class, "Z");
+            this.map("d", int.class, "byte1", new OutputMultiItem() {
                 @Override
                 Map<String, String> getItems(Object packet, Object extractedObject) {
                     Map<String, String> map = new HashMap<>();
@@ -139,7 +139,7 @@ public enum PacketRegistry {
                     if (blockO instanceof Block) {
                         if (blockO == Blocks.NOTE_BLOCK) {
                             String instrument;
-                            int type = ((Byte) extractedObject).intValue();
+                            int type = ((Integer) extractedObject).intValue();
                             switch (type) {
                                 case 0:
                                     instrument = "harp";
@@ -161,7 +161,7 @@ public enum PacketRegistry {
                             }
                             map.put("instrument", instrument);
                         } else if (blockO == Blocks.PISTON) {
-                            int type = ((Byte) extractedObject).intValue();
+                            int type = ((Integer) extractedObject).intValue();
                             String movement;
                             switch (type) {
                                 case 0:
@@ -175,14 +175,14 @@ public enum PacketRegistry {
                             }
                             map.put("movement", movement);
                         } else if (blockO == Blocks.CHEST || blockO == Blocks.TRAPPED_CHEST) {
-                            int type = ((Byte) extractedObject).intValue();
+                            int type = ((Integer) extractedObject).intValue();
                             map.put("value-always-1", String.valueOf(type));
                         }
                     }
                     return map;
                 }
             });
-            this.map("e", "byte2", new OutputMultiItem() {
+            this.map("e", int.class, "byte2", new OutputMultiItem() {
                 @Override
                 Map<String, String> getItems(Object packet, Object extractedObject) {
                     Map<String, String> map = new HashMap<>();
@@ -197,9 +197,9 @@ public enum PacketRegistry {
                     }
                     if (blockO instanceof Block) {
                         if (blockO == Blocks.NOTE_BLOCK) {
-                            map.put("pitch", String.valueOf(((Byte) extractedObject).intValue()));
+                            map.put("pitch", String.valueOf(((Integer) extractedObject).intValue()));
                         } else if (blockO == Blocks.PISTON) {
-                            int type = ((Byte) extractedObject).intValue();
+                            int type = ((Integer) extractedObject).intValue();
                             String movement;
                             switch (type) {
                                 case 0:
@@ -225,7 +225,7 @@ public enum PacketRegistry {
                             }
                             map.put("movement", movement);
                         } else if (blockO == Blocks.CHEST || blockO == Blocks.TRAPPED_CHEST) {
-                            int type = ((Byte) extractedObject).intValue();
+                            int type = ((Integer) extractedObject).intValue();
                             String state;
                             switch (type) {
                                 case 0:
@@ -247,42 +247,42 @@ public enum PacketRegistry {
     },
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
         {
-            this.map("a", PacketRegistry.ENTITY_ID);
-            this.map("c", "X");
-            this.map("d", "Y");
-            this.map("e", "Z");
+            this.map("a", int.class, PacketRegistry.ENTITY_ID);
+            this.map("c", int.class, "X");
+            this.map("d", int.class, "Y");
+            this.map("e", int.class, "Z");
         }
     },
     VELOCITY(PacketPlayOutEntityVelocity.class) {
         {
-            this.map("a", PacketRegistry.ENTITY_ID);
-            this.map("b", "MOT_X");
-            this.map("c", "MOT_Y");
-            this.map("d", "MOT_Z");
+            this.map("a", int.class, PacketRegistry.ENTITY_ID);
+            this.map("b", int.class, "MOT_X");
+            this.map("c", int.class, "MOT_Y");
+            this.map("d", int.class, "MOT_Z");
         }
     },
     MOVE(PacketPlayOutRelEntityMove.class) {
         {
-            this.map("a", PacketRegistry.ENTITY_ID);
-            this.map("b", "X");
-            this.map("c", "Y");
-            this.map("d", "Z");
+            this.map("a", int.class, PacketRegistry.ENTITY_ID);
+            this.map("b", byte.class, "X");
+            this.map("c", byte.class, "Y");
+            this.map("d", byte.class, "Z");
         }
     },
     MOVELOOK(PacketPlayOutRelEntityMoveLook.class) {
         {
-            this.map("a", PacketRegistry.ENTITY_ID);
-            this.map("b", "X");
-            this.map("c", "Y");
-            this.map("d", "Z");
+            this.map("a", int.class, PacketRegistry.ENTITY_ID);
+            this.map("b", byte.class, "X");
+            this.map("c", byte.class, "Y");
+            this.map("d", byte.class, "Z");
         }
     },
     TELEPORT(PacketPlayOutEntityTeleport.class) {
         {
-            this.map("a", PacketRegistry.ENTITY_ID);
-            this.map("b", "X");
-            this.map("c", "Y");
-            this.map("d", "Z");
+            this.map("a", int.class, PacketRegistry.ENTITY_ID);
+            this.map("b", int.class, "X");
+            this.map("c", int.class, "Y");
+            this.map("d", int.class, "Z");
         }
     },
     ;
@@ -407,9 +407,12 @@ public enum PacketRegistry {
         return builder.toString();
     }
 
-    protected Field map(Output output, String fieldName, String name, Class<?> clazz) {
+    protected Field map(Output output, String fieldName, Class<?> fieldType, String name, Class<?> clazz) {
         try {
             final Field field = clazz.getDeclaredField(fieldName);
+            if (!field.getType().equals(fieldType)) {
+                throw new AssertionError("Field " + fieldName + " in " + clazz + " is not type " + fieldType);
+            }
             field.setAccessible(true);
             this.mapping.add(new PacketInfo(name, field, output));
             return field;
@@ -418,16 +421,16 @@ public enum PacketRegistry {
             if ((sup == null) || sup.equals(Object.class)) {
                 throw new AssertionError("Could not find field " + fieldName);
             }
-            return this.map(output, fieldName, name, sup);
+            return this.map(output, fieldName, fieldType, name, sup);
         }
     }
 
-    protected Field map(String fieldName, String name) {
-        return this.map(fieldName, name, this.DEFAULT_OUTPUT);
+    protected Field map(String fieldName, Class<?> fieldType, String name) {
+        return this.map(fieldName, fieldType, name, this.DEFAULT_OUTPUT);
     }
 
-    protected Field map(String fieldName, String name, Output customOutput) {
-        return this.map(customOutput, fieldName, name, this.clazz);
+    protected Field map(String fieldName, Class<?> fieldType, String name, Output customOutput) {
+        return this.map(customOutput, fieldName, fieldType, name, this.clazz);
     }
 
     Class<? extends Packet> getClazz() {
