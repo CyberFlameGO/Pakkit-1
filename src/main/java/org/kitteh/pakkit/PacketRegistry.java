@@ -119,7 +119,7 @@ public enum PacketRegistry {
     },
     BLOCK_ACTION(PacketPlayOutBlockAction.class) {
         {
-            final Field block = this.map("f", Block.class, "block");
+            final Getter<Block> blockGetter = this.map("f", Block.class, "block");
             this.map("a", int.class, "X");
             this.map("b", int.class, "Y");
             this.map("c", int.class, "Z");
@@ -127,57 +127,51 @@ public enum PacketRegistry {
                 @Override
                 Map<String, String> getItems(Object packet, Object extractedObject) {
                     Map<String, String> map = new HashMap<>();
-                    Object blockO = null;
-                    try {
-                        blockO = block.get(packet);
-                    } catch (Exception e) {
-                    }
-                    if (blockO == null || extractedObject == null) {
+                    Block block = blockGetter.get(packet);
+                    if (block == null || extractedObject == null) {
                         map.put("error", "null values");
                         return map;
                     }
-                    if (blockO instanceof Block) {
-                        if (blockO == Blocks.NOTE_BLOCK) {
-                            String instrument;
-                            int type = ((Integer) extractedObject).intValue();
-                            switch (type) {
-                                case 0:
-                                    instrument = "harp";
-                                    break;
-                                case 1:
-                                    instrument = "double bass";
-                                    break;
-                                case 2:
-                                    instrument = "snare drum";
-                                    break;
-                                case 3:
-                                    instrument = "click";
-                                    break;
-                                case 4:
-                                    instrument = "bass drum";
-                                    break;
-                                default:
-                                    instrument = "unknown";
-                            }
-                            map.put("instrument", instrument);
-                        } else if (blockO == Blocks.PISTON) {
-                            int type = ((Integer) extractedObject).intValue();
-                            String movement;
-                            switch (type) {
-                                case 0:
-                                    movement = "pushing";
-                                    break;
-                                case 1:
-                                    movement = "pulling";
-                                    break;
-                                default:
-                                    movement = "unknown";
-                            }
-                            map.put("movement", movement);
-                        } else if (blockO == Blocks.CHEST || blockO == Blocks.TRAPPED_CHEST) {
-                            int type = ((Integer) extractedObject).intValue();
-                            map.put("value-always-1", String.valueOf(type));
+                    if (block == Blocks.NOTE_BLOCK) {
+                        String instrument;
+                        int type = ((Integer) extractedObject).intValue();
+                        switch (type) {
+                            case 0:
+                                instrument = "harp";
+                                break;
+                            case 1:
+                                instrument = "double bass";
+                                break;
+                            case 2:
+                                instrument = "snare drum";
+                                break;
+                            case 3:
+                                instrument = "click";
+                                break;
+                            case 4:
+                                instrument = "bass drum";
+                                break;
+                            default:
+                                instrument = "unknown";
                         }
+                        map.put("instrument", instrument);
+                    } else if (block == Blocks.PISTON) {
+                        int type = ((Integer) extractedObject).intValue();
+                        String movement;
+                        switch (type) {
+                            case 0:
+                                movement = "pushing";
+                                break;
+                            case 1:
+                                movement = "pulling";
+                                break;
+                            default:
+                                movement = "unknown";
+                        }
+                        map.put("movement", movement);
+                    } else if (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
+                        int type = ((Integer) extractedObject).intValue();
+                        map.put("value-always-1", String.valueOf(type));
                     }
                     return map;
                 }
@@ -186,59 +180,53 @@ public enum PacketRegistry {
                 @Override
                 Map<String, String> getItems(Object packet, Object extractedObject) {
                     Map<String, String> map = new HashMap<>();
-                    Object blockO = null;
-                    try {
-                        blockO = block.get(packet);
-                    } catch (Exception e) {
-                    }
-                    if (blockO == null || extractedObject == null) {
+                    Block block = blockGetter.get(packet);
+                    if (block == null || extractedObject == null) {
                         map.put("error", "null values");
                         return map;
                     }
-                    if (blockO instanceof Block) {
-                        if (blockO == Blocks.NOTE_BLOCK) {
-                            map.put("pitch", String.valueOf(((Integer) extractedObject).intValue()));
-                        } else if (blockO == Blocks.PISTON) {
-                            int type = ((Integer) extractedObject).intValue();
-                            String movement;
-                            switch (type) {
-                                case 0:
-                                    movement = "down";
-                                    break;
-                                case 1:
-                                    movement = "up";
-                                    break;
-                                case 2:
-                                    movement = "south";
-                                    break;
-                                case 3:
-                                    movement = "west";
-                                    break;
-                                case 4:
-                                    movement = "north";
-                                    break;
-                                case 5:
-                                    movement = "east";
-                                    break;
-                                default:
-                                    movement = "unknown";
-                            }
-                            map.put("movement", movement);
-                        } else if (blockO == Blocks.CHEST || blockO == Blocks.TRAPPED_CHEST) {
-                            int type = ((Integer) extractedObject).intValue();
-                            String state;
-                            switch (type) {
-                                case 0:
-                                    state = "closed";
-                                    break;
-                                case 1:
-                                    state = "open";
-                                    break;
-                                default:
-                                    state = "unknown";
-                            }
-                            map.put("chest state", state);
+                    if (block == Blocks.NOTE_BLOCK) {
+                        map.put("pitch", String.valueOf(((Integer) extractedObject).intValue()));
+                    } else if (block == Blocks.PISTON) {
+                        int type = ((Integer) extractedObject).intValue();
+                        String movement;
+                        switch (type) {
+                            case 0:
+                                movement = "down";
+                                break;
+                            case 1:
+                                movement = "up";
+                                break;
+                            case 2:
+                                movement = "south";
+                                break;
+                            case 3:
+                                movement = "west";
+                                break;
+                            case 4:
+                                movement = "north";
+                                break;
+                            case 5:
+                                movement = "east";
+                                break;
+                            default:
+                                movement = "unknown";
                         }
+                        map.put("movement", movement);
+                    } else if (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
+                        int type = ((Integer) extractedObject).intValue();
+                        String state;
+                        switch (type) {
+                            case 0:
+                                state = "closed";
+                                break;
+                            case 1:
+                                state = "open";
+                                break;
+                            default:
+                                state = "unknown";
+                        }
+                        map.put("chest state", state);
                     }
                     return map;
                 }
@@ -286,6 +274,23 @@ public enum PacketRegistry {
         }
     },
     ;
+
+    class Getter<T> {
+        private Field field;
+
+        Getter(Field field) {
+            this.field = field;
+        }
+
+        @SuppressWarnings("unchecked")
+        T get(Object o) {
+            try {
+                return (T) field.get(o);
+            } catch (final Exception e) {
+                return null;
+            }
+        }
+    }
 
     abstract class Output {
         final String getOutput(String name, Field field, Object packet) {
@@ -407,7 +412,7 @@ public enum PacketRegistry {
         return builder.toString();
     }
 
-    protected Field map(Output output, String fieldName, Class<?> fieldType, String name, Class<?> clazz) {
+    protected <T> Getter<T> map(Output output, String fieldName, Class<T> fieldType, String name, Class<?> clazz) {
         try {
             final Field field = clazz.getDeclaredField(fieldName);
             if (!field.getType().equals(fieldType)) {
@@ -415,7 +420,7 @@ public enum PacketRegistry {
             }
             field.setAccessible(true);
             this.mapping.add(new PacketInfo(name, field, output));
-            return field;
+            return new Getter<>(field);
         } catch (final NoSuchFieldException e) {
             final Class<?> sup = clazz.getSuperclass();
             if ((sup == null) || sup.equals(Object.class)) {
@@ -425,11 +430,11 @@ public enum PacketRegistry {
         }
     }
 
-    protected Field map(String fieldName, Class<?> fieldType, String name) {
+    protected <T> Getter<T> map(String fieldName, Class<T> fieldType, String name) {
         return this.map(fieldName, fieldType, name, this.DEFAULT_OUTPUT);
     }
 
-    protected Field map(String fieldName, Class<?> fieldType, String name, Output customOutput) {
+    protected <T> Getter<T> map(String fieldName, Class<T> fieldType, String name, Output customOutput) {
         return this.map(customOutput, fieldName, fieldType, name, this.clazz);
     }
 
