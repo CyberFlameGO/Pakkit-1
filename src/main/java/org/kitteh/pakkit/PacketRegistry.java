@@ -23,11 +23,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.server.v1_7_R1.Block;
+import net.minecraft.server.v1_7_R1.Blocks;
 import net.minecraft.server.v1_7_R1.Packet;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAbilities;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAnimation;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAttachEntity;
 import net.minecraft.server.v1_7_R1.PacketPlayOutBed;
+import net.minecraft.server.v1_7_R1.PacketPlayOutBlockAction;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityTeleport;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityVelocity;
 import net.minecraft.server.v1_7_R1.PacketPlayOutNamedEntitySpawn;
@@ -112,6 +115,134 @@ public enum PacketRegistry {
             this.map("b", "X");
             this.map("c", "Y");
             this.map("d", "Z");
+        }
+    },
+    BLOCK_ACTION(PacketPlayOutBlockAction.class) {
+        {
+            final Field block = this.map("f", "block");
+            this.map("a", "X");
+            this.map("b", "Y");
+            this.map("c", "Z");
+            this.map("d", "byte1", new OutputMultiItem() {
+                @Override
+                Map<String, String> getItems(Object packet, Object extractedObject) {
+                    Map<String, String> map = new HashMap<>();
+                    Object blockO = null;
+                    try {
+                        blockO = block.get(packet);
+                    } catch (Exception e) {
+                    }
+                    if (blockO == null || extractedObject == null) {
+                        map.put("error", "null values");
+                        return map;
+                    }
+                    if (blockO instanceof Block) {
+                        if (blockO == Blocks.NOTE_BLOCK) {
+                            String instrument;
+                            int type = ((Byte) extractedObject).intValue();
+                            switch (type) {
+                                case 0:
+                                    instrument = "harp";
+                                    break;
+                                case 1:
+                                    instrument = "double bass";
+                                    break;
+                                case 2:
+                                    instrument = "snare drum";
+                                    break;
+                                case 3:
+                                    instrument = "click";
+                                    break;
+                                case 4:
+                                    instrument = "bass drum";
+                                    break;
+                                default:
+                                    instrument = "unknown";
+                            }
+                            map.put("instrument", instrument);
+                        } else if (blockO == Blocks.PISTON) {
+                            int type = ((Byte) extractedObject).intValue();
+                            String movement;
+                            switch (type) {
+                                case 0:
+                                    movement = "pushing";
+                                    break;
+                                case 1:
+                                    movement = "pulling";
+                                    break;
+                                default:
+                                    movement = "unknown";
+                            }
+                            map.put("movement", movement);
+                        } else if (blockO == Blocks.CHEST || blockO == Blocks.TRAPPED_CHEST) {
+                            int type = ((Byte) extractedObject).intValue();
+                            map.put("value-always-1", String.valueOf(type));
+                        }
+                    }
+                    return map;
+                }
+            });
+            this.map("e", "byte2", new OutputMultiItem() {
+                @Override
+                Map<String, String> getItems(Object packet, Object extractedObject) {
+                    Map<String, String> map = new HashMap<>();
+                    Object blockO = null;
+                    try {
+                        blockO = block.get(packet);
+                    } catch (Exception e) {
+                    }
+                    if (blockO == null || extractedObject == null) {
+                        map.put("error", "null values");
+                        return map;
+                    }
+                    if (blockO instanceof Block) {
+                        if (blockO == Blocks.NOTE_BLOCK) {
+                            map.put("pitch", String.valueOf(((Byte) extractedObject).intValue()));
+                        } else if (blockO == Blocks.PISTON) {
+                            int type = ((Byte) extractedObject).intValue();
+                            String movement;
+                            switch (type) {
+                                case 0:
+                                    movement = "down";
+                                    break;
+                                case 1:
+                                    movement = "up";
+                                    break;
+                                case 2:
+                                    movement = "south";
+                                    break;
+                                case 3:
+                                    movement = "west";
+                                    break;
+                                case 4:
+                                    movement = "north";
+                                    break;
+                                case 5:
+                                    movement = "east";
+                                    break;
+                                default:
+                                    movement = "unknown";
+                            }
+                            map.put("movement", movement);
+                        } else if (blockO == Blocks.CHEST || blockO == Blocks.TRAPPED_CHEST) {
+                            int type = ((Byte) extractedObject).intValue();
+                            String state;
+                            switch (type) {
+                                case 0:
+                                    state = "closed";
+                                    break;
+                                case 1:
+                                    state = "open";
+                                    break;
+                                default:
+                                    state = "unknown";
+                            }
+                            map.put("chest state", state);
+                        }
+                    }
+                    return map;
+                }
+            });
         }
     },
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
@@ -242,7 +373,7 @@ public enum PacketRegistry {
     public static String getOutput(Object packet) {
         final PacketRegistry reg = PacketRegistry.byClass.get(packet.getClass());
         if (reg == null) {
-            return null;
+            return "";
         }
         return reg.output(packet);
     }

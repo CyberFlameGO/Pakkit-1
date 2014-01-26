@@ -124,7 +124,8 @@ public class Pakkit implements Listener {
     }
 
     private void handlePacket(Player player, Object packet) {
-        final Class<?> clazz = packet.getClass();
+        player.sendMessage(PacketRegistry.getOutput(packet));
+        /*final Class<?> clazz = packet.getClass();
         PakkitPacket pak = this.packets.get(clazz);
         if (pak == null) {
             pak = new PakkitPacket(clazz);
@@ -136,7 +137,7 @@ public class Pakkit implements Listener {
                 return;
             }
             this.plugin.getServer().broadcastMessage(player.getName() + ": " + output);
-        }
+        }*/
     }
 
     private void inject(Player player) {
