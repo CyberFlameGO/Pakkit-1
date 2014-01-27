@@ -31,6 +31,7 @@ import net.minecraft.server.v1_7_R1.PacketPlayOutAnimation;
 import net.minecraft.server.v1_7_R1.PacketPlayOutAttachEntity;
 import net.minecraft.server.v1_7_R1.PacketPlayOutBed;
 import net.minecraft.server.v1_7_R1.PacketPlayOutBlockAction;
+import net.minecraft.server.v1_7_R1.PacketPlayOutBlockBreakAnimation;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityTeleport;
 import net.minecraft.server.v1_7_R1.PacketPlayOutEntityVelocity;
 import net.minecraft.server.v1_7_R1.PacketPlayOutNamedEntitySpawn;
@@ -231,6 +232,15 @@ public enum PacketRegistry {
                     return map;
                 }
             });
+        }
+    },
+    BLOCK_BREAK_ANIMATION(PacketPlayOutBlockBreakAnimation.class) {
+        {
+            map("a", int.class, PacketRegistry.ENTITY_ID);
+            map("b", int.class, "X");
+            map("c", int.class, "Y");
+            map("d", int.class, "Z");
+            map("e", int.class, "destruction level");
         }
     },
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
