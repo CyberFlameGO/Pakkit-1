@@ -31,11 +31,6 @@ import org.bukkit.command.TabExecutor;
 import com.google.common.collect.ImmutableList;
 
 final class Command implements TabExecutor {
-    @Retention(value = RetentionPolicy.RUNTIME)
-    @interface SubCommand {
-        String arg();
-    }
-    
     final class Args {
         private final String[] args;
 
@@ -54,7 +49,12 @@ final class Command implements TabExecutor {
             return this.args.length;
         }
     }
-    
+
+    @Retention(value = RetentionPolicy.RUNTIME)
+    @interface SubCommand {
+        String arg();
+    }
+
     private static final List<String> OPTIONS;
     private static final Map<String, Method> METHODS = new HashMap<>();
     private static final String opt;

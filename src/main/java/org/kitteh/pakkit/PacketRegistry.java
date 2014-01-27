@@ -127,15 +127,15 @@ public enum PacketRegistry {
             this.map("d", int.class, "byte1", new OutputMultiItem() {
                 @Override
                 Map<String, String> getItems(Object packet, Object extractedObject) {
-                    Map<String, String> map = new HashMap<>();
-                    Block block = blockGetter.get(packet);
-                    if (block == null || extractedObject == null) {
+                    final Map<String, String> map = new HashMap<>();
+                    final Block block = blockGetter.get(packet);
+                    if ((block == null) || (extractedObject == null)) {
                         map.put("error", "null values");
                         return map;
                     }
                     if (block == Blocks.NOTE_BLOCK) {
                         String instrument;
-                        int type = ((Integer) extractedObject).intValue();
+                        final int type = ((Integer) extractedObject).intValue();
                         switch (type) {
                             case 0:
                                 instrument = "harp";
@@ -157,7 +157,7 @@ public enum PacketRegistry {
                         }
                         map.put("instrument", instrument);
                     } else if (block == Blocks.PISTON) {
-                        int type = ((Integer) extractedObject).intValue();
+                        final int type = ((Integer) extractedObject).intValue();
                         String movement;
                         switch (type) {
                             case 0:
@@ -170,8 +170,8 @@ public enum PacketRegistry {
                                 movement = "unknown";
                         }
                         map.put("movement", movement);
-                    } else if (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
-                        int type = ((Integer) extractedObject).intValue();
+                    } else if ((block == Blocks.CHEST) || (block == Blocks.TRAPPED_CHEST)) {
+                        final int type = ((Integer) extractedObject).intValue();
                         map.put("value-always-1", String.valueOf(type));
                     }
                     return map;
@@ -180,16 +180,16 @@ public enum PacketRegistry {
             this.map("e", int.class, "byte2", new OutputMultiItem() {
                 @Override
                 Map<String, String> getItems(Object packet, Object extractedObject) {
-                    Map<String, String> map = new HashMap<>();
-                    Block block = blockGetter.get(packet);
-                    if (block == null || extractedObject == null) {
+                    final Map<String, String> map = new HashMap<>();
+                    final Block block = blockGetter.get(packet);
+                    if ((block == null) || (extractedObject == null)) {
                         map.put("error", "null values");
                         return map;
                     }
                     if (block == Blocks.NOTE_BLOCK) {
                         map.put("pitch", String.valueOf(((Integer) extractedObject).intValue()));
                     } else if (block == Blocks.PISTON) {
-                        int type = ((Integer) extractedObject).intValue();
+                        final int type = ((Integer) extractedObject).intValue();
                         String movement;
                         switch (type) {
                             case 0:
@@ -214,8 +214,8 @@ public enum PacketRegistry {
                                 movement = "unknown";
                         }
                         map.put("movement", movement);
-                    } else if (block == Blocks.CHEST || block == Blocks.TRAPPED_CHEST) {
-                        int type = ((Integer) extractedObject).intValue();
+                    } else if ((block == Blocks.CHEST) || (block == Blocks.TRAPPED_CHEST)) {
+                        final int type = ((Integer) extractedObject).intValue();
                         String state;
                         switch (type) {
                             case 0:
@@ -236,11 +236,11 @@ public enum PacketRegistry {
     },
     BLOCK_BREAK_ANIMATION(PacketPlayOutBlockBreakAnimation.class) {
         {
-            map("a", int.class, PacketRegistry.ENTITY_ID);
-            map("b", int.class, "X");
-            map("c", int.class, "Y");
-            map("d", int.class, "Z");
-            map("e", int.class, "destruction level");
+            this.map("a", int.class, PacketRegistry.ENTITY_ID);
+            this.map("b", int.class, "X");
+            this.map("c", int.class, "Y");
+            this.map("d", int.class, "Z");
+            this.map("e", int.class, "destruction level");
         }
     },
     SPAWN(PacketPlayOutNamedEntitySpawn.class) {
@@ -286,7 +286,7 @@ public enum PacketRegistry {
     ;
 
     class Getter<T> {
-        private Field field;
+        private final Field field;
 
         Getter(Field field) {
             this.field = field;
@@ -295,7 +295,7 @@ public enum PacketRegistry {
         @SuppressWarnings("unchecked")
         T get(Object o) {
             try {
-                return (T) field.get(o);
+                return (T) this.field.get(o);
             } catch (final Exception e) {
                 return null;
             }
